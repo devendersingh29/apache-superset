@@ -1,5 +1,3 @@
-# apache-superset
-
 # Superset on Kubernetes — Deployment Runbook
 
 This documents how Superset (Helm chart `superset-0.22.6`, Superset `6.1.0`) was
@@ -12,13 +10,26 @@ the exact fixes. Keep this alongside `values.yaml` for future re-deploys.
 
 - A working Kubernetes cluster with `kubectl` access
 - Helm 3 installed
-- A default `StorageClass` available (this deployment uses **Longhorn**)
+- A `StorageClass` named `longhorn` available in the cluster (this deployment
+  uses **Longhorn** for Postgres/Redis persistence)
 - The Superset Helm chart cloned locally, chart root containing `Chart.yaml`
 
 ```bash
 cd ~/superset/helm/superset
 ls Chart.yaml values.yaml   # sanity check you're in the right directory
+
+kubectl get storageclass    # confirm `longhorn` exists before installing
 ```
+
+Expected output should include a line like:
+```
+NAME                 PROVISIONER          RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+longhorn (default)   driver.longhorn.io   Delete          Immediate           true                   30d
+```
+
+If `longhorn` isn't listed, either install the Longhorn CSI driver first, or
+change `storageClass: longhorn` in `values.yaml` (under `postgresql.primary.persistence`
+and `redis.master.persistence`) to whatever StorageClass your cluster actually has.
 
 ---
 
