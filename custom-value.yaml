@@ -1,0 +1,62 @@
+
+bootstrapScript: |
+  #!/bin/bash
+  uv pip install --python /app/.venv/bin/python psycopg2-binary clickhouse-connect
+  if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
+
+service:
+  type: NodePort
+  port: 8088
+  nodePort:
+    http: 30088
+
+ingress:
+  enabled: false
+
+init:
+  enabled: true
+  loadExamples: true
+  createAdmin: true
+  adminUser:
+    username: admin
+    firstname: Superset
+    lastname: Admin
+    email: admin@superset.com
+    password: admin
+
+configOverrides:
+  secret: |
+    SECRET_KEY = "A9/QL1nK2tN+WT9Lq71v+untB/8j9kcB3iU7vz0aP5F/SKz7AaepzzO/" 
+
+postgresql:
+  enabled: true
+  auth:
+    username: superset
+    password: "SupersetDB@123"
+    database: superset
+  primary:
+    persistence:
+      enabled: true
+      storageClass: longhorn
+      size: 8Gi
+
+redis:
+  enabled: true
+  master:
+    persistence:
+      enabled: true
+      storageClass: longhorn
+      size: 2Gi
+
+supersetNode:
+  replicas:
+    enabled: true
+    replicaCount: 1
+
+supersetWorker:
+  replicas:
+    enabled: true
+    replicaCount: 1
+
+supersetCeleryBeat:
+  enabled: true
